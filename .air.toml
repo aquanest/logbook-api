@@ -1,0 +1,3 @@
+[build]
+cmd = "go build -o ./tmp/logbook ./cmd/main.go"
+bin = "tmp/logbook --web.debug"
