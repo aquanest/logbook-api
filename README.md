@@ -2,6 +2,8 @@
 
 logbook-api is a REST API to make divelogs in ATMOS Platform to public.
 
+![](https://github.com/umatare5/logbook-api/blob/images/promo.gif)
+
 ## Syntax
 
 ```bash
