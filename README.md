@@ -34,10 +34,10 @@ GLOBAL OPTIONS:
 
   Following variables are supported.
 
-  | Environment Variable | Description                              |
-  | :------------------- | :--------------------------------------- |
-  | LOGBOOK_ATMOS_API    | FQDN for ATMOS Platform.                 |
-  | LOGBOOK_ATMOS_TOKENS | Access-tokens to use ATMOS Platform API. |
+  | Environment Variable | Description                             |
+  | :------------------- | :-------------------------------------- |
+  | LOGBOOK_ATMOS_API    | FQDN for ATMOS Platform.                |
+  | LOGBOOK_ATMOS_TOKEN  | Access-token to use ATMOS Platform API. |
 
 ## Install
 
