@@ -1,0 +1,12 @@
+# Ignore all
+*
+
+# upload each files
+!Dockerfile
+!go.mod
+!go.sum
+!cmd/**
+!cli/**
+!config/**
+!internal/**
+!pkg/**
