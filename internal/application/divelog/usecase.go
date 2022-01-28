@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"fmt"
 	"logbook-api/internal/config"
 	"logbook-api/internal/infrastructure"
 	"logbook-api/pkg/cache"
@@ -20,7 +19,7 @@ var inMemoryCache = cache.New(cache.DefaultExpirationTime, cache.DefaultCleanupI
 
 // GetDivelog returns the message
 func (u *Usecase) GetDivelog(divelogID string) (atmos.GetDivelogResponse, error) {
-	key := cache.DivelogEndpointCacheKey
+	key := u.buildDivelogEndpointCacheKey(&divelogID)
 
 	// Try to load cache
 	data, cached := inMemoryCache.Get(key)
@@ -46,7 +45,6 @@ func (u *Usecase) GetDivelogs(limit *int, cursor *string) (atmos.GetDivelogsResp
 	// Try to load cache
 	data, cached := inMemoryCache.Get(key)
 	if cached {
-		fmt.Printf("hit: %v", key)
 		return data.(atmos.GetDivelogsResponse), nil
 	}
 
@@ -66,11 +64,15 @@ func (u *Usecase) buildDivelogsEndpointCacheKey(limit *int, cursor *string) stri
 		return cache.DivelogsEndpointCacheKey
 	}
 	if cursor == nil {
-		return cache.DivelogsEndpointCacheKey + strconv.Itoa(*limit)
+		return cache.DivelogsEndpointCacheKey + "-" + strconv.Itoa(*limit)
 	}
 	if limit == nil {
-		return cache.DivelogsEndpointCacheKey + *cursor
+		return cache.DivelogsEndpointCacheKey + "-" + *cursor
 	}
 
-	return cache.DivelogsEndpointCacheKey + strconv.Itoa(*limit) + *cursor
+	return cache.DivelogsEndpointCacheKey + "-" + strconv.Itoa(*limit) + "-" + *cursor
+}
+
+func (u *Usecase) buildDivelogEndpointCacheKey(divelogID *string) string {
+	return cache.DivelogEndpointCacheKey + "-" + *divelogID
 }
