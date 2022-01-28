@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"fmt"
 	"logbook-api/internal/config"
 	"logbook-api/internal/infrastructure"
 	"logbook-api/pkg/cache"
@@ -45,6 +46,7 @@ func (u *Usecase) GetDivelogs(limit *int, cursor *string) (atmos.GetDivelogsResp
 	// Try to load cache
 	data, cached := inMemoryCache.Get(key)
 	if cached {
+		fmt.Printf("hit: %v", key)
 		return data.(atmos.GetDivelogsResponse), nil
 	}
 
