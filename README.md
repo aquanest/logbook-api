@@ -63,3 +63,15 @@ After unarchived, start logbook-api easily with the following command.
 | :-- | :----- | :-------------------------- | :----------------------------- | :----------------------- |
 | ✅  | GET    | /api/v1/divelogs            | limit=number,<br>cursor=string | Get dive-logs            |
 | ✅  | GET    | /api/v1/divelog/{divelogId} | divelogId=String               | Get detail of a dive-log |
+
+## Release
+
+When push new tag, following Github Actions will works;
+
+- [deploy.yml](.github/workflows/deploy.yml)
+
+  - Build new image and push to GCR. After that, the image will be deployed to Cloud Run.
+
+- [release.yml](.github/workflows/release.yml)
+
+  - Release new command to Github Releases.
