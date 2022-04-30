@@ -23,24 +23,3 @@ function validate_docker_exists(){
     exit 1
   fi
 }
-
-# Check gcloud exists
-function validate_gcloud_exists(){
-  if ! gcloud --version > /dev/null ; then
-    exit 1
-  fi
-}
-
-# Check access token exists
-function validate_gcloud_access_token_exists(){
-  if ! gcloud auth print-access-token > /dev/null ; then
-    exit 1
-  fi
-}
-
-# Check gcloud project configured
-function validate_gcloud_project_configured(){
-  if ! gcloud config configurations activate ${GCP_PROJECT} > /dev/null ; then
-    exit 1
-  fi
-}

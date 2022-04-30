@@ -11,12 +11,3 @@ test:
 .PHONY: start
 start:
 	./scripts/deploy.sh
-
-.PHONY: deploy
-deploy:
-	./scripts/deploy.sh gcp
-
-.PHONY: release
-release:
-	git bump
-	goreleaser release --rm-dist
