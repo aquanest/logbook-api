@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - '*'
+      - "*"
 
 env:
   PROJECT_NUMBER: ${{ secrets.GCP_PROJECT_NUMBER }}
@@ -22,42 +22,41 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: "read"
+      id-token: "write"
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup Cloud SDK
-      id: 'auth'
-      uses: google-github-actions/auth@v0
-      with:
-        create_credentials_file: true
-        workload_identity_provider:
-          projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ env.WI_POOL_ID }}/providers/${{ env.WI_PROVIDER_ID }}
-        service_account: ${{ env.WI_SERVICE_ACCOUNT }}
+      - name: Setup Cloud SDK
+        id: "auth"
+        uses: google-github-actions/auth@v2
+        with:
+          create_credentials_file: true
+          workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ env.WI_POOL_ID }}/providers/${{ env.WI_PROVIDER_ID }}
+          service_account: ${{ env.WI_SERVICE_ACCOUNT }}
 
-    - name: Activate gcloud
-      run: gcloud auth login --brief --cred-file="${{ steps.auth.outputs.credentials_file_path }}"
+      - name: Activate gcloud
+        run: gcloud auth login --brief --cred-file="${{ steps.auth.outputs.credentials_file_path }}"
 
-    - name: Authorize Docker push
-      run: gcloud auth configure-docker --quiet
+      - name: Authorize Docker push
+        run: gcloud auth configure-docker --quiet
 
-    - name: Build Container Image
-      run: docker build -t ${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }} .
+      - name: Build Container Image
+        run: docker build -t ${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }} .
 
-    - name: Push Container Image
-      run: docker push ${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}
+      - name: Push Container Image
+        run: docker push ${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}
 
-    - name: Deploy to Cloud Run
-      id: deploy
-      uses: google-github-actions/deploy-cloudrun@v0
-      with:
-        image: ${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}
-        project_id: ${{ env.PROJECT_ID }}
-        region: ${{ env.GCR_REGION }}
-        service: ${{ env.SERVICE }}
-        env_vars: LOGBOOK_ATMOS_TOKEN=${{ env.LOGBOOK_ATMOS_TOKEN }},LOGBOOK_ATMOS_API=${{ env.LOGBOOK_ATMOS_API }}
-        tag: latest
-        no_traffic: false
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          image: ${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}
+          project_id: ${{ env.PROJECT_ID }}
+          region: ${{ env.GCR_REGION }}
+          service: ${{ env.SERVICE }}
+          env_vars: LOGBOOK_ATMOS_TOKEN=${{ env.LOGBOOK_ATMOS_TOKEN }},LOGBOOK_ATMOS_API=${{ env.LOGBOOK_ATMOS_API }}
+          tag: latest
+          no_traffic: false
