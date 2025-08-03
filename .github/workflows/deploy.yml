@@ -29,16 +29,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Cloud SDK
-        id: "auth"
+      - name: Authenticate with Google Cloud
+        id: auth
         uses: google-github-actions/auth@v2
         with:
           create_credentials_file: true
           workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ env.WI_POOL_ID }}/providers/${{ env.WI_PROVIDER_ID }}
           service_account: ${{ env.WI_SERVICE_ACCOUNT }}
-
-      - name: Authorize Docker push
-        run: gcloud auth configure-docker ${{ env.AR_LOCATION }}
 
       - name: Build Container Image
         run: docker build -t ${{ env.AR_LOCATION }}/${{ env.PROJECT_ID }}/logbook/${{ env.SERVICE }}:${{ github.sha }} .
@@ -47,7 +44,6 @@ jobs:
         run: docker push ${{ env.AR_LOCATION }}/${{ env.PROJECT_ID }}/logbook/${{ env.SERVICE }}:${{ github.sha }}
 
       - name: Deploy to Cloud Run
-        id: deploy
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           image: ${{ env.AR_LOCATION }}/${{ env.PROJECT_ID }}/logbook/${{ env.SERVICE }}:${{ github.sha }}
