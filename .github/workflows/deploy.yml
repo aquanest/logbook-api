@@ -41,13 +41,10 @@ jobs:
         run: gcloud auth login --brief --cred-file="${{ steps.auth.outputs.credentials_file_path }}"
 
       - name: Authorize Docker push
-        run: gcloud auth configure-docker ${{ env.AR_LOCATION }} --quiet
+        run: gcloud auth configure-docker ${{ env.AR_LOCATION }}
 
       - name: Build Container Image
         run: docker build -t ${{ env.AR_LOCATION }}/${{ env.PROJECT_ID }}/logbook/${{ env.SERVICE }}:${{ github.sha }} .
-
-      - name: Push Container Image
-        run: gcloud auth configure-docker asia-docker.pkg.dev
 
       - name: Push Container Image
         run: docker push ${{ env.AR_LOCATION }}/${{ env.PROJECT_ID }}/logbook/${{ env.SERVICE }}:${{ github.sha }}
