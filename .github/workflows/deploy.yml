@@ -4,68 +4,67 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - "*"
+      - "*" # タグ push 時にデプロイ
 
 env:
-  PROJECT_NUMBER: ${{ secrets.GCP_PROJECT_NUMBER }}
   PROJECT_ID: ${{ secrets.GCP_PROJECT }}
+  PROJECT_NUMBER: ${{ secrets.GCP_PROJECT_NUMBER }}
   AR_LOCATION: asia-northeast1-docker.pkg.dev
   GCR_REGION: asia-northeast1
+  REPOSITORY_NAME: logbook
+  IMAGE_NAME: logbook-api
+  SERVICE: logbook-api
   WI_POOL_ID: ${{ secrets.WI_POOL_ID }}
   WI_PROVIDER_ID: ${{ secrets.WI_PROVIDER_ID }}
   WI_SERVICE_ACCOUNT: ${{ secrets.WI_SERVICE_ACCOUNT }}
   LOGBOOK_ATMOS_TOKEN: ${{ secrets.LOGBOOK_ATMOS_TOKEN }}
   LOGBOOK_ATMOS_API: ${{ secrets.LOGBOOK_ATMOS_API }}
-  SERVICE: logbook-api
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: "read"
-      id-token: "write"
+      id-token: write
+      contents: read
 
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Authenticate with Google Cloud
+      - name: Authenticate with Google Cloud using WIF
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          create_credentials_file: true
-          export_environment_variables: true
+          token_format: access_token
+          project_id: ${{ env.PROJECT_ID }}
           workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ env.WI_POOL_ID }}/providers/${{ env.WI_PROVIDER_ID }}
           service_account: ${{ env.WI_SERVICE_ACCOUNT }}
 
-      - name: Configure Docker auth via impersonation
-        env:
-          CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: ${{ steps.auth.outputs.credentials_file_path }}
-        run: |
-          gcloud auth configure-docker ${{ env.AR_LOCATION }} --quiet
+      - name: Authenticate Docker to Artifact Registry
+        uses: docker/login-action@v3
+        with:
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+          registry: ${{ env.AR_LOCATION }}
 
-      - name: Debug docker config
-        run: cat ~/.docker/config.json
-
-      - name: Confirm gcloud is using correct credentials
-        run: gcloud auth list
-
-      - name: Build Container Image
-        run: docker build -t ${{ env.AR_LOCATION }}/${{ env.PROJECT_ID }}/logbook/${{ env.SERVICE }}:${{ github.sha }} .
-
-      - name: Show credentials file path
-        run: echo "$GOOGLE_APPLICATION_CREDENTIALS" && cat "$GOOGLE_APPLICATION_CREDENTIALS"
-
-      - name: Push Container Image
-        run: docker push ${{ env.AR_LOCATION }}/${{ env.PROJECT_ID }}/logbook/${{ env.SERVICE }}:${{ github.sha }}
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.AR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.AR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY_NAME }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
-          image: ${{ env.AR_LOCATION }}/${{ env.PROJECT_ID }}/logbook/${{ env.SERVICE }}:${{ github.sha }}
-          project_id: ${{ env.PROJECT_ID }}
-          region: ${{ env.GCR_REGION }}
           service: ${{ env.SERVICE }}
-          env_vars: LOGBOOK_ATMOS_TOKEN=${{ env.LOGBOOK_ATMOS_TOKEN }},LOGBOOK_ATMOS_API=${{ env.LOGBOOK_ATMOS_API }}
+          region: ${{ env.GCR_REGION }}
+          image: ${{ env.AR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY_NAME }}/${{ env.IMAGE_NAME }}:latest
+          project_id: ${{ env.PROJECT_ID }}
+          env_vars: |
+            LOGBOOK_ATMOS_TOKEN=${{ env.LOGBOOK_ATMOS_TOKEN }},
+            LOGBOOK_ATMOS_API=${{ env.LOGBOOK_ATMOS_API }}
           tag: latest
           no_traffic: false
