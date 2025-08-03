@@ -39,9 +39,10 @@ jobs:
           service_account: ${{ env.WI_SERVICE_ACCOUNT }}
 
       - name: Configure Docker auth via impersonation
+        env:
+          CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: ${{ steps.auth.outputs.credentials_file_path }}
         run: |
-          gcloud auth configure-docker ${{ env.AR_LOCATION }} --quiet \
-            --impersonate-service-account=${{ env.WI_SERVICE_ACCOUNT }}
+          gcloud auth configure-docker ${{ env.AR_LOCATION }} --quiet
 
       - name: Debug docker config
         run: cat ~/.docker/config.json
