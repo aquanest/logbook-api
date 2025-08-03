@@ -1,6 +1,6 @@
 module logbook-api
 
-go 1.17
+go 1.24
 
 require (
 	github.com/jinzhu/configor v1.2.1
