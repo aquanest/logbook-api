@@ -37,9 +37,6 @@ jobs:
           workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ env.WI_POOL_ID }}/providers/${{ env.WI_PROVIDER_ID }}
           service_account: ${{ env.WI_SERVICE_ACCOUNT }}
 
-      - name: Activate gcloud
-        run: gcloud auth login --brief --cred-file="${{ steps.auth.outputs.credentials_file_path }}"
-
       - name: Authorize Docker push
         run: gcloud auth configure-docker ${{ env.AR_LOCATION }}
 
