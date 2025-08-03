@@ -37,6 +37,10 @@ jobs:
           workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ env.WI_POOL_ID }}/providers/${{ env.WI_PROVIDER_ID }}
           service_account: ${{ env.WI_SERVICE_ACCOUNT }}
 
+      - name: Configure Docker to use gcloud as credential helper
+        run: |
+          gcloud auth configure-docker ${{ env.AR_LOCATION }} --quiet
+
       - name: Build Container Image
         run: docker build -t ${{ env.AR_LOCATION }}/${{ env.PROJECT_ID }}/logbook/${{ env.SERVICE }}:${{ github.sha }} .
 
