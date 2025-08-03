@@ -38,9 +38,10 @@ jobs:
           workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ env.WI_POOL_ID }}/providers/${{ env.WI_PROVIDER_ID }}
           service_account: ${{ env.WI_SERVICE_ACCOUNT }}
 
-      - name: Activate credentials in gcloud
+      - name: Configure Docker auth via impersonation
         run: |
-          gcloud auth activate-service-account --key-file="${{ steps.auth.outputs.credentials_file_path }}"
+          gcloud auth configure-docker ${{ env.AR_LOCATION }} --quiet \
+            --impersonate-service-account=${{ env.WI_SERVICE_ACCOUNT }}
 
       - name: Configure Docker to use gcloud as credential helper
         run: |
