@@ -35,9 +35,12 @@ jobs:
         with:
           create_credentials_file: true
           export_environment_variables: true
-          activate_credentials: true
           workload_identity_provider: projects/${{ env.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/${{ env.WI_POOL_ID }}/providers/${{ env.WI_PROVIDER_ID }}
           service_account: ${{ env.WI_SERVICE_ACCOUNT }}
+
+      - name: Activate credentials in gcloud
+        run: |
+          gcloud auth activate-service-account --key-file="${{ steps.auth.outputs.credentials_file_path }}"
 
       - name: Configure Docker to use gcloud as credential helper
         run: |
