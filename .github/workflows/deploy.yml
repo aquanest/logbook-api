@@ -43,10 +43,6 @@ jobs:
           gcloud auth configure-docker ${{ env.AR_LOCATION }} --quiet \
             --impersonate-service-account=${{ env.WI_SERVICE_ACCOUNT }}
 
-      - name: Configure Docker to use gcloud as credential helper
-        run: |
-          gcloud auth configure-docker ${{ env.AR_LOCATION }} --quiet
-
       - name: Debug docker config
         run: cat ~/.docker/config.json
 
